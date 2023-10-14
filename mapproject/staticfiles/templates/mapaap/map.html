@@ -1,0 +1,32 @@
+<!-- Inside your app's templates/mapapp/map.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Custom Map</title>
+    <!-- Include necessary CSS and JavaScript for the map here -->
+</head>
+<body>
+    <div id="map">
+        <!-- Display the map here using JavaScript (e.g., Leaflet) -->
+    </div>
+    
+    <div>
+        <h2>Restaurants</h2>
+        <ul>
+            {% for restaurant in restaurants %}
+                <li>{{ restaurant.name }} - {{ restaurant.description }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div>
+        <h2>Rental Cars</h2>
+        <ul>
+            {% for car in rental_cars %}
+                <li>{{ car.name }} - {{ car.description }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

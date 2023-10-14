@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        /* Reset default margin and padding */
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+         body {
+    background-image: url('{% static "handshaking.jpg" %}');
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+
+        
+
+        /* Center the form */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.8); /* Adjust transparency as needed */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px; /* Add some top margin for separation */
+        }
+
+        /* Style the heading */
+        h1 {
+            text-align: center;
+            color: #333; /* Heading color */
+            margin-bottom: 20px;
+        }
+
+        /* Style the paragraph */
+        p {
+            text-align: center;
+            font-size: 18px;
+            color: #555; /* Text color */
+        }
+
+        /* Style the form */
+        form {
+            text-align: center;
+        }
+
+        /* Style form labels */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333; /* Label color */
+            text-align: left; /* Align labels to the left */
+        }
+
+        /* Style input fields */
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.95); /* Input field background color */
+            color: #333; /* Text color */
+        }
+
+        /* Style the textarea */
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Style the submit button */
+        button[type="submit"] {
+            background-color: #4CAF50; /* Green button color */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s; /* Smooth hover effect */
+        }
+
+        /* Hover effect for the submit button */
+        button[type="submit"]:hover {
+            background-color: #45A049; /* Darker green on hover */
+        }
+
+       
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>LET'S BE PARTENERS !!</h1>
+        <p>
+            Address: 123 Main Street<br>
+            Phone: (123) 456-7890<br>
+            Email: contact@example.com
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" rows="4" required></textarea>
+
+            <button type="submit">Submit</button>
+        </form>
+        {% if form_submitted %}
+            <div id="thank-you-message" style="display: none;">
+                <p>Thanks for contacting us! Your message has been successfully sent. We will reply to your message soon.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
