@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+{% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Map</title>
+   <style>
+        /* Add your custom CSS here */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Top middle bar styles */
+        .top-middle-bar {
+            background-color: white;
+            color: green;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            position: fixed;
+            top: 1cm; /* Set the top position to 1cm */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 40px;
+            border-radius: 10px;
+            z-index: 2; /* Ensure it's on top */
+        }
+
+        .top-middle-bar .top-bar-icon {
+            font-size: 20px;
+            margin: 0 15px; /* Increase the margin to space the icons more */
+            color: green;
+        }
+
+        /* Style the leftbar */
+ 
+
+
+        #map {
+            width: calc(100% - 50px);
+            height: calc(100vh - 60px);
+            margin-top: 0;
+            transition: margin-left 0.5s; /* Add a transition for smooth movement */
+        }
+
+        /* Adjust the margin-left when the left bar is open */
+        .leftbar.show #map {
+            margin-left: 250px;
+        } 
+
+        /* Zoom control styles */
+        .zoom-control {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .zoom-button {
+            border: none;
+            background: none;
+            font-size: 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        /* 3D button styles */
+        .toggle-3d-button {
+            border: none;
+            background: none;
+            font-size: 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            color: black;
+        }
+/* Share and Print buttons container */
+.bottom-right-buttons {
+    position: fixed;
+    top: 82%; /* Adjust as needed */
+    right:1.75% ; /* Adjust as needed */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.bottom-right-buttons button {
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+/* Share options container */
+#share-options {
+    display: none;
+    position: absolute;
+    bottom: 45px; /* Adjust as needed */
+    right: 10px; /* Adjust as needed */
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    padding: 10px;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.share-option {
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+
+/* Share popup */
+.share-popup {
+    display: none;
+}
+
+.share-popup button {
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+/* Adjust the close button style */
+.share-popup button:first-child {
+    background-color: transparent;
+    color: red;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+/* Close (X) button */
+.close-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px; /* Adjust the font size as needed */
+    color: green;
+}
+
+
+
+
+
+        /* Search bar at the top right */
+    .search-bar-top {
+    position: fixed;
+    top: 10px; /* Adjust the top position as needed */
+    right: 10px; /* Adjust the right position as needed */
+    z-index: 999; /* Ensure it's on top of other elements */
+}
+
+    .search-bar-top input[type="text"] {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+}
+
+
+/* CSS to position the geocoder-container at the top and center horizontally */
+#search-bar-container {
+    display: none;
+    position: absolute;
+    top: 50px; /* Adjust this value as needed to position it below the menu icon */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+.leftbar.show #search-bar-container {
+    display: block;
+}
+
+
+
+
+/* Add a border-radius to the search bar container */
+#geocoder-container.mapboxgl-ctrl-geocoder.mapboxgl-ctrl {
+    border-radius: 4px; /* Adjust the border-radius as needed */
+}
+
+/* Style for the search icon button */
+#geocoder-container.mapboxgl-ctrl-geocoder.mapboxgl-ctrl button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Style for the search icon - make it green */
+#geocoder-container.mapboxgl-ctrl-geocoder.mapboxgl-ctrl button i {
+    color: green; /* Set the icon color to green */
+    font-size: 18px;
+}
+
+.leftbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 50px; /* Set a smaller width when closed */
+    height: 100%;
+    background-color: green; /* Set the background color to green */
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Adjust the positioning of the middle icons when the left bar is closed */
+.leftbar.show-closed .leftbar-icons {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    color: white;
+}
+
+/* Style the menu icon when the left bar is closed */
+.leftbar.show-closed .menu-icon {
+    font-size: 24px;
+    color: white;
+    top: 10px;
+    right: auto;
+}
+
+
+/* Style the menu icon when the leftbar is closed */
+.leftbar.show-closed .menu-icon i {
+    font-size: 24px; /* Adjust the menu icon size when closed */
+    color: white; /* Set menu icon color to white */
+    top: 10px; /* Position menu icon at the top when closed */
+    right: auto; /* Reset the right position */
+}
+
+.leftbar.show-closed .city-images{
+    display:block;
+}
+
+
+/* Style the leftbar when open */
+.leftbar.show {
+    width: 400px; /* Set a larger width when open */
+    background-color: white; /* Set the background color to white when open */
+}
+
+
+/* Style the icons when the leftbar is open */
+.leftbar.show .leftbar-icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center icons horizontally when open */
+    align-items: center; /* Center icons vertically when open */
+}
+
+
+
+/* Style the menu icon when the leftbar is open */
+.leftbar.show .menu-icon {
+    font-size: 24px; /* Restore menu icon size when open */
+    color: green; /* Set menu icon color to green when open */
+    top: 10px; /* Position menu icon at the top left when open */
+    right: auto; /* Reset the right position */
+    left: 10px;
+}
+
+
+
+/* Move the menu icon inside the leftbar */
+.leftbar .menu-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: green; /* Set menu icon color to green */
+}
+
+/* Position the menu icon at the top right when the leftbar is closed */
+.leftbar.show-closed .menu-icon {
+    right: 10px;
+    left: auto; /* Reset the left position */
+}
+
+/* Style the menu icon when the leftbar is opened */
+.leftbar.show .menu-icon {
+    font-size: 24px; /* Restore the menu icon size when opened */
+    left: 10px;
+    right: auto;
+    
+}
+/* Style the icons when the leftbar is closed */
+.leftbar.show-closed .leftbar-icons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px; /* Increase icon size when closed */
+    color: white; /* Set icon color to white */
+}
+
+
+/* Style the menu icon when the leftbar is closed */
+.leftbar.show-closed .menu-icon {
+    font-size: 24px; /* Adjust the menu icon size when closed */
+    color: white; /* Set icon color to white */
+    top: 10px; /* Position menu icon at the top when closed */
+    right: auto; /* Reset the right position */
+}
+
+/* Style the menu icon when the leftbar is closed */
+.leftbar.show-closed .menu-icon,
+.leftbar.show-closed .routing-icon {
+    font-size: 24px; /* Adjust the menu and routing icon size when closed */
+    color: white; /* Set icon color to white */
+}
+
+
+/* Style the icons when the leftbar is closed */
+.leftbar.show-closed .leftbar-icons .icon-container i.fas {
+    font-size: 24px; /* Increase the icon size when closed */
+    color: white; /* Set icon color to white when closed */
+}
+
+
+
+   /* Style the icons when the leftbar is open */
+    .leftbar.show .leftbar-icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Space the icons evenly */
+}
+
+/* Adjust the width for the open state to fit three icons in a row */
+.leftbar.show .leftbar-icons .icon-container {
+    width: calc(33.333% - 20px); /* Adjust the width to fit three icons with some spacing */
+    margin: 10px; /* Add margin for spacing */
+}
+/* Adjust the border color to a lighter gray */
+.leftbar.show .leftbar-icons .icon-container i {
+    background-color: white; /* Set the background color to white */
+    border-radius: 50%; /* Make the icon container circular */
+    padding: 10px; /* Add padding to the circular container */
+    color: green; /* Set the icon color to green */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #ccc; /* Change the border color to a lighter gray (#ccc) */
+}
+
+
+
+
+
+ /* Create a new rule to wrap icons into two horizontal rows */
+.leftbar.show .leftbar-icons {
+    flex-wrap: wrap; /* Allow icons to wrap into multiple rows */
+    justify-content: space-between; /* Distribute icons evenly */
+}
+
+/* Add this CSS to style your circular icons with gray borders and remove the squares */
+.leftbar.show .leftbar-icons .icon-container {
+    width: calc(33.333% - 20px); /* Adjust the width to fit three icons with some spacing */
+    margin: 10px; /* Add margin for spacing */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+/* Create a new rule to wrap icons into two horizontal rows */
+.leftbar.show .leftbar-icons {
+    flex-wrap: wrap; /* Allow icons to wrap into multiple rows */
+    justify-content: space-between; /* Distribute icons evenly */
+}
+
+
+
+/* Adjust the width for the open state to fit three icons in a row */
+.leftbar.show .leftbar-icons .icon-container {
+    width: calc(33.333% - 20px); /* Adjust the width to fit three icons with some spacing */
+    margin: 10px; /* Add margin for spacing */
+}
+
+/* Create a new rule to wrap icons into two horizontal rows */
+.leftbar.show .leftbar-icons {
+    flex-wrap: wrap; /* Allow icons to wrap into multiple rows */
+    justify-content: space-between; /* Distribute icons evenly */
+}
+
+        /* Create a new rule to wrap icons into two horizontal rows */
+.leftbar.show .leftbar-icons {
+    flex-wrap: wrap; /* Allow icons to wrap into multiple rows */
+    justify-content: space-between; /* Distribute icons evenly */
+}
+
+
+        /* Style the menu icon when the leftbar is open */
+.leftbar.show .menu-icon i {
+    font-size: 24px; /* Restore menu icon size when open */
+    color: green; /* Set menu icon color to green when open */
+    top: 10px; /* Position menu icon at the top left when open */
+    right: auto; /* Reset the right position */
+    left: 10px;
+}
+
+
+/* Style the inner container for icons with a green background when the leftbar is open */
+.leftbar.show .leftbar-inner {
+    background-color: white; /* Set the background color of the leftbar when open to white */
+}
+
+
+/* Style each icon's color when the leftbar is open */
+.leftbar.show .leftbar-icons .icon-container i.fas {
+    color: green; /* Change this color as needed */
+}
+
+/* Style each icon's background when the leftbar is open */
+.leftbar.show .leftbar-icons .icon-container {
+    background-color: white; /* Change this color as needed */
+}
+
+
+        /* Style each icon's color when the leftbar is open */
+        .leftbar.show .leftbar-icons .icon-container:nth-child(1) .fas {
+            color: #ff5733; /* Change this color as needed */
+        }
+
+        .leftbar.show .leftbar-icons .icon-container:nth-child(2) .fas {
+            color: #33ff57; /* Change this color as needed */
+        }
+
+        .leftbar.show .leftbar-icons .icon-container:nth-child(3) .fas {
+            color: #5733ff; /* Change this color as needed */
+        }
+
+        .leftbar.show .leftbar-icons .icon-container:nth-child(4) .fas {
+            color: #ff33e6; /* Change this color as needed */
+        }
+
+        .leftbar.show .leftbar-icons .icon-container:nth-child(5) .fas {
+            color: #f6f2de; /* Change this color as needed */
+        }
+
+        .leftbar.show .leftbar-icons .icon-container:nth-child(6) .fas {
+            color: #e6ff33; /* Change this color as needed */
+        }
+
+
+#right-banner{
+
+    width: 350px;
+    height: 350px;
+    align-items: center;
+    position:fixed;
+    top:45%;
+    
+    
+    }
+
+#left-banner {
+    width: 400px;
+    height: 330px;
+    align-items: center;
+    display: none; /* Initially hide the left-banner */
+    transition: right 0.5s; /* Add transition for smooth movement */
+}
+
+
+
+
+
+
+/* Adjust the position to be at the same level as zoom in/out buttons */
+.locate-button-container {
+    position: absolute;
+    top: 5cm; /* Adjust the top position as needed */
+    right: 35px; /* Adjust the right position as needed */
+    z-index: 2; /* Ensure it's on top */
+}
+#locate-button {
+    background-color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    position:fixed;
+    top:20%;
+    right:2%;
+}
+.locate-icon {
+    font-size: 24px;
+    color: green;
+    
+}
+/* Add CSS styling for the map styles button */
+        .map-styles-button {
+            position: absolute;
+            bottom: 70px; /* Adjust the positioning as needed */
+            left: 10px; /* Adjust the positioning as needed */
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+     
+
+
+         /* Style the dropdown menu for map styles */
+        .map-styles-dropdown {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        /* Style the dropdown options */
+        .map-styles-dropdown a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+        }
+ /* Change color on hover */
+        .map-styles-dropdown a:hover {
+            background-color: #f5f5f5;
+        }
+ 
+/* Style the map style icons container on the right */
+.map-style-icons-right {
+    position: absolute;
+    top: calc(100% - 5cm - 40px); /* Move it up by 3cm from the bottom */
+    right: 39px; /* Move it a bit more to the left */
+    transform: translateY(-50%);
+    z-index: 3; /* Ensure it's on top of other elements */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position:fixed;
+    right:2%;
+    top:70%;
+}
+
+/* Style for the map style icons */
+.map-styles-icon {
+    font-size: 20px;
+    margin-bottom: 5px; /* Add margin between icons */
+    cursor: pointer;
+    color: black; /* Customize the icon color */
+}
+
+/* Add this CSS to adjust the z-index */
+.partnership-button-container {
+    position: fixed;
+    top: 20px; /* Adjust the top distance as needed */
+    right: 20px; /* Adjust the right distance as needed */
+    z-index: 1000; /* Adjust the z-index value as needed */
+}
+/* Style the button itself */
+.partnership-button-container .btn {
+    background-color: green; /* Button background color */
+    color: #fff; /* Text color */
+    padding: 10px 20px; /* Adjust padding as needed */
+    border: none;
+    border-radius: 5px; /* Rounded corners */
+    font-size: 16px; /* Font size */
+    text-decoration: none; /* Remove underlines */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+/* Hover effect */
+.partnership-button-container .btn:hover {
+    background-color: #0056b3; /* Darker color on hover */
+}
+
+/* Add shadow on hover for a raised effect */
+.partnership-button-container .btn:hover {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3); /* Adjust shadow as needed */
+}
+
+
+
+
+/* Add this CSS for the Routing & Directions board */
+.routing-board {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Initially hidden to the right */
+    width: 400px;
+    height: 100%;
+    background-color: white;
+    z-index: 2;
+    transition: right 0.3s ease; /* Add smooth slide-in transition */
+}
+
+.routing-board .board-header {
+    background-color: green;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+}
+
+.routing-board .board-header h2 {
+    margin: 0;
+}
+
+.routing-board .board-content {
+    padding: 20px;
+}
+
+.routing-board .input-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.routing-board .input-container label {
+    flex: 1;
+}
+
+.routing-board .input-container input[type="text"] {
+    flex: 3;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Update the styles for the "Routing & Directions" icon to make it visually separate */
+.leftbar-icons .routing-icon-container {
+    background-color: transparent;
+    border: none;
+}
+
+.leftbar-icons .routing-icon-container .fas {
+    color: green;
+}
+
+/* Adjust the width and margin of icons when the leftbar is open */
+.leftbar.show .leftbar-icons .icon-container {
+    width: calc(33.333% - 20px);
+    margin: 10px;
+}
+
+/* Make sure the icon-container has the same width and margin as others */
+.leftbar.show .leftbar-icons .routing-icon-container {
+    width: calc(33.333% - 20px);
+    margin: 10px;
+}
+
+/* Style the menu icon when the leftbar is closed */
+.leftbar.show-closed .menu-icon i.fas,
+.leftbar.show-closed .routing-icon i.fas {
+    font-size: 24px; /* Adjust the menu and routing icon size when closed */
+    color: white !important; /* Set icon color to white when closed */
+}
+#paragraph{
+color:green;
+font-family:arial;
+}
+
+/* CSS for the city images container */
+.city-images {
+    width: 100%; /* Adjust the width as needed */
+    height: 33%; /* 1/3 of the left bar height */
+    background-color: #f0f0f0; /* Background color for the image container */
+    text-align: center; /* Center-align the image */
+}
+
+/* Style the city images (if needed) */
+.city-images img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.city-images {
+    position: relative;
+}
+
+.city-weather {
+    position: absolute;
+    top: 10px; /* Adjust the top position as needed */
+    left: 10px; /* Adjust the left position as needed */
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background for visibility */
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 1; /* Ensure that the weather information appears on top of the image */
+}
+
+.temperature,
+.city-name {
+    margin: 0;
+    font-size: 14px; /* Adjust the font size as needed */
+}
+
+
+
+
+/* Hide everything in the left bar when it's closed except the middle icons */
+.leftbar.show-closed .city-images,
+.leftbar.show-closed .search-bar-top,
+.leftbar.show-closed .routing-icon-container,
+.leftbar.show-closed #search-bar-container,
+.leftbar.show-closed #temperature,
+ .leftbar.show-closed #city-name,
+ .leftbar.show-closed #city-weather,
+ .leftbar.show-closed #paragraph {
+    display: none;
+}
+
+
+
+/* Style the routing icon when the left bar is closed */
+.leftbar.show-closed .routing-icon-container {
+    background-color: transparent;
+    border: none;
+    font-size: 40px;
+    color: white;
+}
+
+
+
+/* Add a class to hide the map style icons when the routing bar is opened */
+.routing-board-opened .map-style-icons-right {
+    display: none;
+}
+
+/* Hide map style icons when the routing bar is opened */
+.routing-board-opened .map-style-icons-right .map-styles-icon {
+    display: none;
+}
+
+
+@media (max-width: 768px) {
+    /* Add your responsive styles here */
+}
+
+
+
+.container {
+    width: 100%;
+}
+
+.header {
+    padding: 5% 0;
+}
+
+.title {
+    font-size: 2rem;
+}
+
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+    </style>
+     <!-- Include necessary JavaScript libraries (e.g., Mapbox and Mapbox Geocoder) here -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css' rel='stylesheet' />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Include Font Awesome here -->
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://kit.fontawesome.com/068fd49e2e.js" crossorigin="anonymous"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js"></script>
+    <link
+    rel="stylesheet"
+    href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css"
+    type="text/css"
+/>
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.js"></script>
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.css" type="text/css">
+
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.4.0/mapbox-gl-geocoder.min.js"></script>
+
+
+
+</head>
+
+<body>
+<div class="container">
+    
+
+    <!-- Rest of your content, including .top-middle-bar -->
+    <div class="top-middle-bar">
+        <div class="icon-container">
+            <i id="real-estate-icon" class="top-bar-icon fas fa-home"></i>
+        </div>
+        <div class="icon-container">
+            <a href="currency">
+                <i class="top-bar-icon fas fa-dollar-sign"></i>
+            </a>
+        </div>
+        <div class="icon-container">
+            <i id="star-icon-topbar" class="top-bar-icon fas fa-star"></i>
+        </div>
+    </div>
+<div class="container">
+     <!-- Map Style Icons Container (positioned to the right) -->
+   <div class="map-style-icons-right">
+    <!-- Map Style Icons -->
+    <i class="fas fa-map map-styles-icon" onclick="toggleMapStyle('satellite')"></i>
+    <i class="fas fa-road map-styles-icon" onclick="toggleMapStyle('roadmap')"></i>
+</div>
+</div>
+
+   <!-- Add the "Locate Me" button with an icon above the plus/minus buttons -->
+<div class="icon-container locate-button-container">
+    <button id="locate-button" onclick="locateMe()">
+        <i class="fas fa-map-marker-alt"></i>
+    </button>
+</div>
+<div class="container">
+    <div class="leftbar">
+    
+    <!-- City images and weather display -->
+    <div class="city-images">
+       
+        <!-- The rest of your city-related content -->
+    </div>
+
+    <h2 id="city-name"></h2>
+        <p id="city-weather"></p>
+        <div class="menu-icon" onclick="toggleLeftbar()">
+            <i class="fas fa-bars"></i>
+        </div>
+        
+           <div id="search-bar-container">
+            <div id="geocoder-container"></div>
+        </div>
+         
+        <div class="leftbar-icons">
+    <!-- First Line of Icons -->
+    <div class="icon-container" color-class="blue">
+        <i class="fa-solid fa-car-rear"></i>
+    </div>
+    <div class="icon-container" color-class="red">
+        <i class="fa-solid fa-house-chimney-medical"></i>
+    </div>
+    <div class="icon-container" color-class="yellow">
+        <i class="fa-solid fa-bag-shopping"></i>
+    </div>
+    <!-- Second Line of Icons -->
+    <div class="icon-container" color-class="purple">
+        <i class="fa-solid fa-mosque"></i>
+    </div>
+    <div class="icon-container" color-class="orange">
+        <i class="fa-solid fa-hotel"></i>
+    </div>
+    <div class="icon-container" color-class="green">
+        <i class="fas fa-map-marked-alt" title="Routing & Directions" onclick="openRoutingAndDirections()"></i>
+    </div>
+</div>
+
+         <div><img id="left-banner" src='{% static "bankily.jpg" %}' ><img/></div>
+         <div><p id="paragraph">All right reserved to Sewelni<br>Made with love by Brahim shah </p></div>
+    </div>
+</div>
+<!-- Routing & Directions board -->
+<div class="routing-board hidden" id="routingBoard">
+    <div class="board-header">
+        <h2>Routing & Directions</h2>
+        <i class="fas fa-times" onclick="closeRoutingBoard()"></i>
+    </div>
+    <div class="board-content">
+
+    </div>
+    
+    <div id="distance"></div>
+    <div><img id="right-banner" src='{% static "mattel.jpg" %}'><img/></div>
+</div>
+
+        <div id="map">
+            <!-- Add your map content here using JavaScript (e.g., Mapbox initialization) -->
+        </div>
+<div id="star-icons-container"></div>
+<div id="hotel-markers-container"></div>
+
+        
+    </div>
+    <!-- Zoom control -->
+    <div class="zoom-control">
+        <button onclick="zoomIn()" class="zoom-button">+</button>
+        <button onclick="zoomOut()" class="zoom-button">-</button>
+        <div class="toggle-3d-button" onclick="toggle3D()">3D</div>
+    </div>
+    <!-- Share and Print buttons container -->
+<div class="bottom-right-buttons">
+    <!-- Share button -->
+    <button onclick="toggleShareOptions()">
+        <i class="fas fa-share-alt"></i>
+    </button>
+    <!-- Print button -->
+    <button onclick="printPage()">
+        <i class="fas fa-print"></i>
+    </button>
+    <!-- Share options container -->
+    <div id="share-options">
+        <!-- Close (X) icon -->
+        <button class="close-button" onclick="toggleShareOptions()">
+            <i class="fas fa-times"></i>
+        </button>
+        <!-- Social media buttons -->
+        <button class="share-option">
+            <i class="fab fa-vk"></i> <!-- Replace with VK logo -->
+        </button>
+        <button class="share-option">
+            <i class="fab fa-whatsapp"></i> <!-- Replace with WhatsApp logo -->
+        </button>
+        <button class="share-option">
+            <i class="fab fa-facebook"></i> <!-- Replace with Facebook logo -->
+        </button>
+        <button class="share-option" onclick="copyToClipboard()">
+            <i class="fas fa-copy"></i>
+        </button>
+    </div>
+</div>
+
+    <div class="partnership-button-container">
+        <a href="{% url 'contact_us' %}" class="btn btn-primary">Partnership</a>
+    </div>
+    <script>
+
+        mapboxgl.accessToken = 'pk.eyJ1Ijoic2V3ZWxuaSIsImEiOiJjbG0ycW9ub28xaWVxM2RtaDBxMXVpdXo1In0.VfxHndfDZ9UVQWhb62Rrow'; // Replace with your Mapbox access token
+
+        // Add your map JavaScript code here (e.g., Mapbox initialization)
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11', // Change this to your desired map style
+            center: [-15.9780, 18.0841], // Center the map on Nouakchott
+            zoom: 12 // Set the initial zoom level
+        });
+
+
+
+        // Variable to track 3D mode
+        var is3DMode = false;
+
+        // Function to toggle 3D mode
+        function toggle3D() {
+            is3DMode = !is3DMode;
+            if (is3DMode) {
+                map.setPitch(45); // Set pitch to 45 degrees for 3D view
+            } else {
+                map.setPitch(0); // Reset pitch to 0 degrees for 2D view
+            }
+        }
+// Function to toggle the left bar and additional search bar
+function toggleLeftbar() {
+    const leftbar = document.querySelector('.leftbar');
+    leftbar.classList.toggle('show'); // Toggle the class for open/closed state
+
+    const map = document.getElementById('map');
+    map.style.marginLeft = leftbar.classList.contains('show') ? '250px' : '50px'; // Adjust map margin
+
+    const leftBanner = document.getElementById('left-banner');
+    const menuIcon = document.querySelector('.menu-icon i.fas');
+    const allIcons = document.querySelectorAll('.leftbar-icons .icon-container i.fas');
+
+    if (leftbar.classList.contains('show')) {
+        // Leftbar is open
+        leftBanner.style.display = 'block'; // Show the left-banner
+        menuIcon.style.color = 'green'; // Menu icon is green
+        allIcons.forEach(icon => {
+            icon.style.color = 'green'; // All icons are green
+        });
+    } else {
+        // Leftbar is closed
+        leftBanner.style.display = 'none'; // Hide the left-banner
+        menuIcon.style.color = 'white'; // Menu icon is white
+        allIcons.forEach(icon => {
+            icon.style.color = 'white'; // All icons are white
+        });
+    }
+}
+
+// Initial call to set the initial state
+toggleLeftbar();
+
+
+        // Function to zoom in
+        function zoomIn() {
+            map.zoomIn();
+        }
+
+        // Function to zoom out
+        function zoomOut() {
+            map.zoomOut();
+        }
+
+
+// Function to toggle share options and adjust button position
+function toggleShareOptions() {
+    const shareOptions = document.getElementById('share-options');
+    const shareButtons = document.querySelector('.bottom-right-buttons');
+
+    if (shareOptions.style.display === 'none' || shareOptions.style.display === '') {
+        // Show the share options
+        shareOptions.style.display = 'block';
+        // Adjust the position of the buttons to make them visible
+        shareButtons.style.bottom = '2.5cm'; /* Adjust as needed */
+        shareButtons.style.right = '0.75cm'; /* Adjust as needed */
+    } else {
+        // Hide the share options
+        shareOptions.style.display = 'none';
+        // Reset the position of the buttons
+        shareButtons.style.bottom = '1cm'; /* Adjust as needed */
+        shareButtons.style.right = '0.5cm'; /* Adjust as needed */
+    }
+}
+
+
+
+
+        // Function for printing the page
+        function printPage() {
+            window.print();
+        }
+
+        // Create an object to store markers
+        var markers = {};
+
+        // Function to create a marker with a photo
+        function createMarkerWithPhoto(coordinates, photoUrl, name) {
+            // Check if a marker already exists for this name
+            if (markers[name]) {
+                // Focus the map on the existing marker
+                map.flyTo({ center: coordinates, zoom: 12 });
+                return;
+            }
+
+            var marker = new mapboxgl.Marker({ color: 'green' })
+                .setLngLat(coordinates)
+                .addTo(map);
+
+            // Create a popup for the location
+            var popup = new mapboxgl.Popup({ offset: 25 })
+                .setHTML(`<h3>${name}</h3><img src="${photoUrl}" alt="${name}" width="200" />`);
+
+            // Add the popup to the marker
+            marker.setPopup(popup);
+
+            // Store the marker in the markers object
+            markers[name] = marker;
+        }
+
+
+// Function to locate the user's current position
+function locateMe() {
+    navigator.geolocation.getCurrentPosition(function (position) {
+        // Get the user's current position
+        const userLocation = [position.coords.longitude, position.coords.latitude];
+
+        // Create a marker at the user's location
+        const userMarker = new mapboxgl.Marker({ color: 'red' })
+            .setLngLat(userLocation)
+            .addTo(map);
+
+        // Fly to the user's location and adjust the zoom level
+        map.flyTo({ center: userLocation, zoom: 12 });
+
+        // Optionally, you can open a popup with user's coordinates
+        const popup = new mapboxgl.Popup()
+            .setHTML(`<h3>Your Location</h3><p>Latitude: ${userLocation[1]}, Longitude: ${userLocation[0]}</p>`);
+        
+        userMarker.setPopup(popup);
+    }, function (error) {
+        // Handle location error, if needed
+        console.error("Error getting user's location:", error);
+    });
+}
+
+
+// Variables to track the current map style
+var currentMapStyle = 'mapbox://styles/mapbox/streets-v11'; // Default style
+var satelliteStyle = 'mapbox://styles/mapbox/satellite-streets-v11';
+var roadmapStyle = 'mapbox://styles/mapbox/streets-v11';
+
+// Function to toggle between Satellite and Roadmap styles
+function toggleMapStyle(style) {
+    console.log(`Toggling style to: ${style}`); // Log the style being toggled
+
+    if (style === 'satellite') {
+        map.setStyle(satelliteStyle);
+        currentMapStyle = satelliteStyle;
+    } else if (style === 'roadmap') {
+        map.setStyle(roadmapStyle);
+        currentMapStyle = roadmapStyle;
+    }
+}
+
+
+// Add the Mapbox Geocoding Control
+var geocoder = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+    mapboxgl: mapboxgl,
+    placeholder: 'Search...',
+    marker: false,
+});
+
+// Add an event listener to the geocoder for the 'result' event
+geocoder.on('result', function (e) {
+    // Get the selected location's coordinates
+    var coordinates = e.result.geometry.coordinates;
+
+    // Fly to the selected location on the map
+    map.flyTo({ center: coordinates, zoom: 15 });
+});
+
+// Add the geocoder to your page
+document.getElementById('geocoder-container').appendChild(geocoder.onAdd(map));
+ 
+
+// JavaScript function to open the Routing & Directions board
+function openRoutingAndDirections() {
+    var routingBoard = document.getElementById("routingBoard");
+    routingBoard.style.right = "0"; // Slide in from the right
+
+    // Hide the partnership button when the board is opened
+    var partnershipButton = document.querySelector(".partnership-button-container");
+    partnershipButton.style.display = "none";
+
+    // Hide the map style icons when the board is opened
+    var mapStyleIcons = document.querySelectorAll(".map-styles-icon");
+    mapStyleIcons.forEach(function(icon) {
+        icon.style.display = "none";
+    });
+}
+
+// JavaScript function to close the Routing & Directions board
+function closeRoutingBoard() {
+    var routingBoard = document.getElementById("routingBoard");
+    routingBoard.style.right = "-400px"; // Slide out to the right
+
+    // Show the partnership button when the board is closed
+    var partnershipButton = document.querySelector(".partnership-button-container");
+    partnershipButton.style.display = "block";
+
+    // Show the map style icons when the board is closed
+    var mapStyleIcons = document.querySelectorAll(".map-styles-icon");
+    mapStyleIcons.forEach(function(icon) {
+        icon.style.display = "block";
+    });
+}
+
+// Attach an event listener to open the routing board when the routing button is clicked
+document.querySelector('.fa-map-marked-alt').addEventListener('click', openRoutingAndDirections);
+
+
+
+// Initialize Mapbox Directions
+var directions = new MapboxDirections({
+    accessToken: mapboxgl.accessToken,
+    unit: 'metric',
+    profile: 'mapbox/driving',
+    controls: {
+        profileSwitcher: false
+    }
+});
+map.addControl(directions, 'top-left');
+
+// Calculate and display the route distance
+map.on('load', function () {
+    map.addSource('route', {
+        type: 'geojson',
+        data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+                type: 'LineString',
+                coordinates: [],
+            },
+        },
+    });
+
+    map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: 'route',
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+        },
+        paint: {
+            'line-color': '#3887be',
+            'line-width': 5,
+            'line-opacity': 0.75,
+        },
+    });
+
+    directions.on('route', function (e) {
+        var route = e.route[0];
+        var distance = route.distance.toFixed(2); // Distance in kilometers
+        document.getElementById('distance').innerHTML = `Distance: ${distance} km`;
+        map.getSource('route').setData({
+            type: 'Feature',
+            properties: {},
+            geometry: route.geometry,
+        });
+    });
+});
+
+function showGoldStarIcons() {
+    const starIconsContainer = document.getElementById('star-icons-container');
+
+    // Define your points of interest with their coordinates
+    const poiData = [
+        {
+            name: 'POI 1',
+            latitude: 18.09491285987805,
+            longitude: -15.970732924356112,
+        },
+        {
+            name: 'POI 2',
+            latitude: 18.308744669100975,
+            longitude: -15.962996764058841,
+        },
+
+        {
+            name: 'POI 3',
+            latitude: 18.086930768529495,
+            longitude: -15.975509095520374,
+        },
+
+         {
+            name: 'POI 4',
+            latitude: 18.073677973806845,
+            longitude: -15.95820138017779,
+        },
+
+
+         {
+            name: 'POI 5',
+            latitude: 18.110345437529134,
+            longitude: -16.023730595520867,
+        },
+
+
+         {
+            name: 'POI 6',
+            latitude: 18.19835234684059,
+            longitude: -16.031668724827504,
+        },
+
+        {
+            name: 'POI 7',
+            latitude: 18.233575969062024,
+            longitude: -16.039481140162703,
+        },
+
+        {
+            name: 'POI 8',
+            latitude: 18.104868303602117,
+            longitude: -15.985398468764261,
+        },
+
+        {
+            name: 'POI 9',
+            latitude: 18.1068651188407,
+            longitude: -15.9788187090141,
+        },
+
+        {
+            name: 'POI 10',
+            latitude: 18.100832170168978,
+            longitude: -15.98541187622448,
+        },
+
+       
+        // Add more POIs as needed
+    ];
+
+    // Create and append gold star icons for each point of interest
+    poiData.forEach(poi => {
+        // Create a marker for each point of interest
+        var marker = new mapboxgl.Marker({ color: 'green' })
+            .setLngLat([poi.longitude, poi.latitude])
+            .addTo(map);
+
+        // Optionally, you can add a popup to each marker with more information
+        var popup = new mapboxgl.Popup()
+            .setHTML(`<h3>${poi.name}</h3>`);
+
+        marker.setPopup(popup);
+    });
+
+    // If you want to center the map on the first point of interest
+    if (poiData.length > 0) {
+        map.flyTo({ center: [poiData[0].longitude, poiData[0].latitude], zoom: 12 });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach a click event listener to the "Star" icon in the top bar
+    var starIconTopBar = document.querySelector('#star-icon-topbar');
+    starIconTopBar.addEventListener('click', showGoldStarIcons);
+});
+
+
+    
+
+
+ function showHotelMarkers() {
+    // Define your points of interest with their coordinates
+    const hotelData = [
+        {
+            name: 'Azalaï Marhaba',
+            photoUrl: '/static/azalai.jpg',
+            latitude: 18.08720900720462,
+            longitude: -15.973447828281577
+        },
+        {
+            name: 'Fasq Hotel Nouakchott',
+            photoUrl: '/static/fasq.jpg',
+            latitude: 18.10836143823811,
+            longitude: -15.983443066673457
+        },
+        {
+            name: 'Mauricenter Hotel',
+            photoUrl: '/static/mauricentre.jpg',
+            latitude: 18.107807185930202,
+            longitude: -15.97322658595602
+        },
+        {
+            name: 'Nouakchott Hotel',
+            photoUrl: '/static/nkchotel.jpg',
+            latitude: 18.107996719650377,
+            longitude: -15.985982553191969
+        },
+        {
+            name: 'Hotel Dialali',
+            photoUrl: '/static/dialali.jpg',
+            latitude: 18.087762909125082,
+            longitude: -15.995415239925968
+        }
+    ];
+
+    // Create and append markers for each point of interest
+    hotelData.forEach(hotel => {
+        // Create a marker for each point of interest
+        var marker = new mapboxgl.Marker({ color: 'purple' })
+            .setLngLat([hotel.longitude, hotel.latitude])
+            .addTo(map);
+
+        // Create a popup with the photo and name
+        const popupContent = `
+            <img src="${hotel.photoUrl}" alt="${hotel.name}" width="100" height="100">
+            <h3>${hotel.name}</h3>
+        `;
+
+        var popup = new mapboxgl.Popup()
+            .setHTML(popupContent);
+
+        marker.setPopup(popup);
+    });
+
+    // If you want to center the map on the first point of interest
+    if (hotelData.length > 0) {
+        map.flyTo({ center: [hotelData[0].longitude, hotelData[0].latitude], zoom: 12 });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Attach a click event listener to the "Star" icon in the top bar
+    var hotelIconLeftBar = document.querySelector('.fa-hotel');
+    hotelIconLeftBar.addEventListener('click', showHotelMarkers);
+});
+
+
+    
+function showHospitalMarkers() {
+    // Define your hospital data with their coordinates and photos
+    const hospitalData = [
+        {
+            name: 'Hôpital Cheikh Zayed',
+            photoUrl: '/static/zaied.jpg',
+            latitude: 18.078747537055207,
+            longitude: -15.936349180655297,
+        },
+        {
+            name: 'Hospital National',
+            photoUrl: '/static/hopitalnational.jpg',
+            latitude: 18.076709593067967,
+            longitude: -15.957589827506057,
+        },
+        // Add more hospital data here...
+         {
+            name: 'Centre National de Cardiologie',
+            latitude: 18.148392870580174,
+            longitude: -15.994502494452957,
+        },
+        {
+            name: 'Clinique Chiva مصحة الشفاء',
+            latitude: 18.10072674074036,
+            longitude: -15.984655953191737,
+        },
+        {
+            name: 'مستشفى توجنين',
+            latitude: 18.074588129730163,
+            longitude: -15.906606400860245,
+        },
+        {
+            name: 'CLINIQUE IBN SINA مصحة إبن سينا',
+            latitude: 18.104220966981217,
+            longitude: -15.994286156352567,
+        }
+    ];
+
+    // Create and append markers for each hospital
+    hospitalData.forEach(hospital => {
+        var marker = new mapboxgl.Marker({ color: '#EA1179' }) // Red color for hospitals
+            .setLngLat([hospital.longitude, hospital.latitude])
+            .addTo(map);
+
+        // Create a popup with the hospital name and photo
+        const popupContent = `
+            <h3>${hospital.name}</h3>
+            <img src="${hospital.photoUrl}" alt="${hospital.name}" width="100" height="100">
+        `;
+
+        var popup = new mapboxgl.Popup()
+            .setHTML(popupContent);
+
+        marker.setPopup(popup);
+    });
+
+    // If you want to center the map on the first hospital
+    if (hospitalData.length > 0) {
+        map.flyTo({ center: [hospitalData[0].longitude, hospitalData[0].latitude], zoom: 12 });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Attach a click event listener to the hospital icon
+    var hospitalIcon = document.querySelector('.fa-house-chimney-medical');
+    hospitalIcon.addEventListener('click', showHospitalMarkers);
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Add a click event listener to the car icon
+    var carIcon = document.querySelector('.fa-car-rear'); // Select the icon by class
+
+    carIcon.addEventListener('click', function () {
+        // Call the function to show car markers when the icon is clicked
+        showCarMarkers();
+    });
+
+    // Function to show car markers
+    function showCarMarkers() {
+        const carData = [
+            {
+                name: 'Bourse Montreal',
+                latitude: 18.108068995733213,
+                longitude: -15.962858409244562
+            },
+            {
+                name: 'MAURILAND BOURSE ET LOCATION',
+                latitude: 18.107167868923685,
+                longitude: -15.970846284441938
+            },
+            {
+                name: 'RIM-BOURSE',
+                latitude: 18.104093250452927,
+                longitude: -15.965943276495707
+            },
+            {
+                name: 'بورصة النجاح|alnnajah.Bourse',
+                latitude: 18.10259425453938,
+                longitude: -15.967232228619809
+            }
+        ];
+
+        carData.forEach(car => {
+            var marker = new mapboxgl.Marker({ color: '#AE445A' }) // Green color for cars
+                .setLngLat([car.longitude, car.latitude])
+                .addTo(map);
+
+            marker.getElement().addEventListener('click', function () {
+                console.log('Car clicked:', car.name);
+                // Add your custom logic here
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Add a click event listener to the mosque icon
+    var mosqueIcon = document.querySelector('.fa-mosque'); // Select the icon by class
+
+    mosqueIcon.addEventListener('click', function () {
+        // Call the function to show mosque markers when the icon is clicked
+        showMosqueMarkers();
+    });
+
+    // Function to show mosque markers
+    function showMosqueMarkers() {
+        const mosqueData = [
+            {
+                name: 'مسجد ابن عباس',
+                latitude: 18.088197166339082,
+                longitude: -15.96395556668487
+            },
+            {
+                name: 'جامع الملك فيصل بن عبد العزيز',
+                latitude: 18.09064630391306,
+                longitude: -15.975663928282202
+            },
+            {
+                name: 'مسجد الحسن الثاني (مسجد المغرب)',
+                latitude: 18.077598308116286,
+                longitude: -15.981167387835248
+            }
+        ];
+
+        mosqueData.forEach(mosque => {
+            var marker = new mapboxgl.Marker({ color: '#F39F5A' }) // Gold color for mosques
+                .setLngLat([mosque.longitude, mosque.latitude])
+                .addTo(map);
+
+            marker.getElement().addEventListener('click', function () {
+                console.log('Mosque clicked:', mosque.name);
+                // Add your custom logic here
+            });
+        });
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Add a click event listener to the stores icon
+    var storesIcon = document.querySelector('.fa-bag-shopping'); // Select the icon by class
+
+    storesIcon.addEventListener('click', function () {
+        // Call the function to show store markers when the icon is clicked
+        showStoreMarkers();
+    });
+
+    // Function to show store markers
+    function showStoreMarkers() {
+        const storeData = [
+            {
+                name: 'Marché Nos Enfants, Nouakchott, Mauritania',
+                latitude: 18.103409782651546,
+                longitude: -15.97608495572089
+            },
+            {
+                name: 'Fatales Mauritanie, Avenue Moktar Ould Daddah, نواكشوط، موريتانيا',
+                latitude: 18.104357657065393,
+                longitude: -15.996376899999948
+            },
+            {
+                name: 'سوقي Mon Marchè',
+                latitude: 18.11279306351926,
+                longitude: -15.996631773483262
+            },
+            {
+                name: 'NANA Mauritania',
+                latitude: 18.1035704960882,
+                longitude: -15.998380116755001
+            },
+            {
+                name: 'Celio Mauritanie',
+                latitude: 18.10753844790994,
+                longitude: -15.989659245595353
+            },
+            {
+                name: 'NOUAKCHOTT CLUB',
+                latitude: 18.106924308807578,
+                longitude: -15.969989141897324
+            },
+            {
+                name: 'PARFOIS NKC',
+                latitude: 18.1096980767424,
+                longitude: -15.981894074626084
+            }
+        ];
+
+        storeData.forEach(store => {
+            var marker = new mapboxgl.Marker({ color: '#088395' }) // Orange color for stores
+                .setLngLat([store.longitude, store.latitude])
+                .addTo(map);
+
+            marker.getElement().addEventListener('click', function () {
+                console.log('Store clicked:', store.name);
+                // Add your custom logic here
+            });
+        });
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Add a click event listener to the real estate icon
+    var realEstateIcon = document.querySelector('#real-estate-icon'); // Select the icon by ID
+
+    realEstateIcon.addEventListener('click', function () {
+        // Call the function to show real estate markers when the icon is clicked
+        showRealEstateMarkers();
+    });
+
+    // Function to show real estate markers
+    function showRealEstateMarkers() {
+        const realEstateData = [
+            {
+                name: 'Ely Real Estate',
+                latitude: 18.059272976362315,
+                longitude: -15.929422104290952
+            },
+            {
+                name: 'وكالة نواكشوط العقارية Agence Nouakchott Immobiere',
+                latitude: 18.115136870296777,
+                longitude: -15.967669331121451
+            },
+            {
+                name: 'وكالة عقارية Agence immobilière',
+                latitude: 18.050516480185134,
+                longitude: -15.966982685644739
+            }
+        ];
+
+        realEstateData.forEach(realEstate => {
+            var marker = new mapboxgl.Marker({ color: 'green' }) // Green color for real estate
+                .setLngLat([realEstate.longitude, realEstate.latitude])
+                .addTo(map);
+
+            marker.getElement().addEventListener('click', function () {
+                console.log('Real Estate clicked:', realEstate.name);
+                // Add your custom logic here
+            });
+        });
+    }
+});
+// Define city data with coordinates and image URLs
+const cityData = {
+    'Nouakchott': {
+        lat: 18.08581,
+        lng: -15.9785,
+        imageUrl: '/static/nkc.jpg' // Update with the correct image path
+    },
+    'Nouadhibou': {
+        lat: 20.9309,
+        lng: -17.0348,
+        imageUrl: '/static/ndb.jpg' // Update with the correct image path
+    },
+
+
+    'Kiffa': {
+        lat: 16.6209,
+        lng: -11.3994,
+        imageUrl: '/static/kiffa.jpg' // Image URL for Kiffa
+    },
+    'Aioun': {
+        lat: 16.6614,
+        lng: -9.6149,
+        imageUrl: '/static/aioun.jpg' // Image URL for Aioun
+    },
+    'Néma': {
+        lat: 16.6228,
+        lng: -7.2721,
+        imageUrl: '/static/nema.jpg' // Image URL for Nema
+    },
+
+    
+    // Add more cities and image URLs as needed
+    'Aleg':  {
+
+        lat: 17.0481, 
+        lng:-13.9209,
+        imageUrl:'/static/aleg.jpg'
+        
+    },
+
+
+  'Rosso':  {
+
+        lat: 16.51378, 
+        lng:-15.80503,
+        imageUrl:'/static/rosso.jpg'
+        
+    },
+
+
+ 
+
+
+ 
+  'zouerate':  {
+
+        lat: 22.71873, 
+        lng:-12.45205,
+        imageUrl:'/static/zouerate.jpg'
+        
+    },
+
+
+  'Atar':  {
+
+        lat: 20.51686, 
+        lng:-13.04987,
+        imageUrl:'/static/atar.jpg'
+        
+    },
+
+
+
+'Sélibabi':  {
+
+        lat: 15.15846, 
+        lng:-12.1843,
+        imageUrl:'/static/seylibabi.jpeg'
+        
+    },
+
+
+
+'Kaédi':  {
+
+        lat: 16.140157401735568, 
+        lng: -13.510902049800555,
+        imageUrl:'/static/Kaedi.jpg'
+        
+    },
+
+    
+
+
+    
+
+    // Add more cities and image URLs as needed
+};
+
+// Function to display city information
+function displayCityInfo(cityName, weatherData) {
+    const cityImagesContainer = document.querySelector('.city-images');
+    const cityNameElement = document.getElementById('city-name');
+    const cityWeatherElement = document.getElementById('city-weather');
+
+    // Check if the city is in the cityData object
+    if (cityData.hasOwnProperty(cityName)) {
+        const cityInfo = cityData[cityName];
+
+        // Dynamically create and set the image element
+        const imageElement = document.createElement('img');
+        imageElement.src = cityInfo.imageUrl;
+
+        // Clear previous images
+        cityImagesContainer.innerHTML = '';
+
+        // Add the image to the container
+        cityImagesContainer.appendChild(imageElement);
+
+        // Set the city name in the HTML
+        cityNameElement.textContent = cityName; // Use the cityName parameter
+
+        // Set the city weather in the HTML
+        cityWeatherElement.textContent = `Temperature: ${weatherData.temperature}, Weather: ${weatherData.weather}`;
+    } else {
+        // Handle the case where the city is not found in your data
+        cityImagesContainer.innerHTML = 'City not found.';
+        cityNameElement.textContent = '';
+        cityWeatherElement.textContent = '';
+    }
+}
+
+// Listen for the 'result' event from the geocoder
+geocoder.on('result', (event) => {
+    const selectedCity = event.result.text; // Get the selected city name from Mapbox geocoder result
+
+    // Call the function to fetch city weather and display city information
+    fetchCityWeather(selectedCity);
+});
+
+// Function to fetch city weather
+function fetchCityWeather(cityName) {
+    const apiKey = 'e8c31967e15c6121f9b2be5656b633f3';
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${apiKey}`;
+
+    fetch(apiUrl)
+        .then((response) => response.json())
+        .then((data) => {
+            const weatherData = {
+                temperature: data.main.temp,
+                weather: data.weather[0].description,
+            };
+
+            // Call the function to display city information
+            displayCityInfo(cityName, weatherData);
+        })
+        .catch((error) => {
+            console.error('Error fetching weather data:', error);
+        });
+}
+
+// Function to set the default city (Nouakchott)
+function setDefaultCity() {
+    const defaultCity = 'Nouakchott'; // Change this to the default city name
+
+    // Call the function to fetch city weather and display city information
+    fetchCityWeather(defaultCity);
+}
+
+// Call the function to set the default city
+setDefaultCity();
+
+
+
+
+
+
+
+
+// Function to toggle the visibility of elements inside the left bar when it's closed
+function toggleLeftbarElements() {
+    const leftBar = document.querySelector('.leftbar');
+    const cityImages = document.getElementById('cityImages');
+    const searchBarContainer = document.getElementById('search-bar-container');
+    const temperature = document.querySelector('.temperature');
+    const cityName = document.querySelector('.city-name');
+    const cityWeather = document.querySelector('.city-weather');
+
+    if (leftBar.classList.contains('show-closed')) {
+        cityImages.style.display = 'none';
+        searchBarContainer.style.display = 'none';
+        temperature.style.display = 'none'; // Hide temperature
+        cityName.style.display = 'none'; // Hide city-name
+        cityWeather.style.display = 'none'; // Hide city-weather
+    } else {
+        cityImages.style.display = 'block';
+        searchBarContainer.style.display = 'block';
+        temperature.style.display = 'block'; // Show temperature
+        cityName.style.display = 'block'; // Show city-name
+        cityWeather.style.display = 'block'; // Show city-weather
+    }
+}
+
+// Add an event listener to the menu icon to toggle left bar visibility and elements
+document.querySelector('.menu-icon').addEventListener('click', function () {
+    const leftBar = document.querySelector('.leftbar');
+    leftBar.classList.toggle('show-closed');
+    toggleLeftbarElements();
+});
+
+// JavaScript function to copy a generic map link to the clipboard
+function copyToClipboard() {
+    var genericMapLink = "https://www.google.com/maps"; // Generic map link
+
+    // Create a temporary input element to copy the link to the clipboard
+    var tempInput = document.createElement("input");
+    tempInput.value = genericMapLink;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+
+    // Provide a user alert that the link has been copied
+    alert("Map link copied to clipboard: " + genericMapLink);
+}
+
+
+
+
+    </script>
+    
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
