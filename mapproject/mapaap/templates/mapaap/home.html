@@ -968,7 +968,7 @@ img {
     </div>
     <script>
 
-        mapboxgl.accessToken = 'pk.eyJ1Ijoic2V3ZWxuaSIsImEiOiJjbG0ycW9ub28xaWVxM2RtaDBxMXVpdXo1In0.VfxHndfDZ9UVQWhb62Rrow'; // Replace with your Mapbox access token
+        mapboxgl.accessToken = ''; // Replace with your Mapbox access token
 
         // Add your map JavaScript code here (e.g., Mapbox initialization)
         var map = new mapboxgl.Map({
@@ -1820,7 +1820,7 @@ geocoder.on('result', (event) => {
 
 // Function to fetch city weather
 function fetchCityWeather(cityName) {
-    const apiKey = 'e8c31967e15c6121f9b2be5656b633f3';
+    const apiKey = '';
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${apiKey}`;
 
     fetch(apiUrl)

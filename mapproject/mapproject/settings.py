@@ -11,13 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 import os
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> ffcd1c8237488467794f0b64d1a53074c59dbbc9
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-7h2(%m=g+o854^%s$l2n#&3lrxsm*&l9a*%9nu*+a_d#u35v)v"
+SECRET_KEY = ""
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -128,10 +125,10 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'mapaap', 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
 
-=======
->>>>>>> ffcd1c8237488467794f0b64d1a53074c59dbbc9
+#=======
+#>>>>>>> ffcd1c8237488467794f0b64d1a53074c59dbbc9
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -144,3 +141,11 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 
 SESSION_COOKIE_SECURE = False
+
+
+
+
+MAPBOX_TOKEN = config('')
+SECRET_KEY = config('')
+API_KEY = config('')
+ACCESS_KEY = config('')
