@@ -14,7 +14,10 @@ from pathlib import Path
 import os
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ffcd1c8237488467794f0b64d1a53074c59dbbc9
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -125,7 +128,10 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'mapaap', 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ffcd1c8237488467794f0b64d1a53074c59dbbc9
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
